@@ -1037,7 +1037,6 @@ threadinfo_init(threadinfo_t *tinfo, const config_t *config,
         tmp_int = ntohl(config->local_addr.type.sin.sin_addr.s_addr);
         tmp_int += client_offset++;
         tmp_addr.type.sin.sin_addr.s_addr = htonl(tmp_int);
-        perf_log_printf("> addr 0x%x\n", ntohl(tmp_addr.type.sin.sin_addr.s_addr));
         tinfo->socks[i] = perf_net_opensocket(&config->server_addr,
                                               &tmp_addr,
                                               socket_offset++,
