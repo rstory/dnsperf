@@ -482,6 +482,15 @@ setup(int argc, char **argv, config_t *config)
      */
     if (config->threads > config->clients)
         config->threads = config->clients;
+
+    perf_log_printf("> Config summary");
+    perf_log_printf("> clients: %d, threads: %d",
+        config->clients, config->threads);
+    perf_log_printf("> max outstanding: %d, max qps: %d",
+        config->max_outstanding, config->max_qps);
+#ifdef __linux__
+    perf_log_printf("> CPU affinity: %d", config->affinity);
+#endif
 }
 
 static void
