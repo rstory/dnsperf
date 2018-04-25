@@ -985,7 +985,10 @@ static void
 threadinfo_init(threadinfo_t *tinfo, const config_t *config,
                 const times_t *times)
 {
+    static int client_offset = 0;
     unsigned int offset, socket_offset, i;
+    isc_sockaddr_t tmp_addr;
+    isc_uint32_t tmp_int;
 
     memset(tinfo, 0, sizeof(*tinfo));
     MUTEX_INIT(&tinfo->lock);
@@ -1029,11 +1032,17 @@ threadinfo_init(threadinfo_t *tinfo, const config_t *config,
     socket_offset = 0;
     for (i = 0; i < offset; i++)
         socket_offset += threads[i].nsocks;
-    for (i = 0; i < tinfo->nsocks; i++)
+    for (i = 0; i < tinfo->nsocks; i++) {
+        tmp_addr = config->local_addr;
+        tmp_int = ntohl(config->local_addr.type.sin.sin_addr.s_addr);
+        tmp_int += client_offset++;
+        tmp_addr.type.sin.sin_addr.s_addr = htonl(tmp_int);
+        perf_log_printf("> addr 0x%x\n", ntohl(tmp_addr.type.sin.sin_addr.s_addr));
         tinfo->socks[i] = perf_net_opensocket(&config->server_addr,
-                                              &config->local_addr,
+                                              &tmp_addr,
                                               socket_offset++,
                                               config->bufsize);
+    }
     tinfo->current_sock = 0;
 
     THREAD(&tinfo->receiver, do_recv, tinfo);
