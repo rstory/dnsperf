@@ -1,0 +1,5 @@
+/* add defines here */
+
+/* Define as 1 if you have XYZ.h.  */
+#undef HAVE_XYZ_H
+
