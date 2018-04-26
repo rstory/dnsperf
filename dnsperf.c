@@ -1028,7 +1028,7 @@ static void set_thread_affinity(pthread_t thread, unsigned int num)
             set_thread_affinity(t, n); \
     } while(0)
 #else
-#define THREAD_AFFINITY(t, n) {}
+#define THREAD_AFFINITY(t, c, n) {}
 #endif
 
 static void
