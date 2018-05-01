@@ -26,7 +26,9 @@
 #include <isc/buffer.h>
 #include <isc/hex.h>
 #include <isc/hmacmd5.h>
+#ifdef ISC_SHA1_DIGESTLENGTH
 #include <isc/hmacsha.h>
+#endif
 #include <isc/lex.h>
 #include <isc/mem.h>
 #include <isc/parseint.h>
@@ -77,11 +79,21 @@ typedef enum {
 
 typedef union {
     isc_hmacmd5_t hmacmd5;
+#ifdef ISC_SHA1_DIGESTLENGTH
     isc_hmacsha1_t hmacsha1;
+#endif
+#ifdef ISC_SHA224_DIGESTLENGTH
     isc_hmacsha224_t hmacsha224;
+#endif
+#ifdef ISC_SHA256_DIGESTLENGTH
     isc_hmacsha256_t hmacsha256;
+#endif
+#ifdef ISC_SHA384_DIGESTLENGTH
     isc_hmacsha384_t hmacsha384;
+#endif
+#ifdef ISC_SHA512_DIGESTLENGTH
     isc_hmacsha512_t hmacsha512;
+#endif
 } hmac_ctx_t;
 
 struct perf_dnstsigkey {
@@ -229,16 +241,26 @@ perf_dns_parsetsigkey(const char *arg, isc_mem_t *mctx)
 
     if (alg == NULL || strncasecmp(alg, "hmac-md5:", 9) == 0) {
         SET_KEY(tsigkey, MD5);
+#ifdef ISC_SHA1_DIGESTLENGTH
     } else if (strncasecmp(alg, "hmac-sha1:", 10) == 0) {
         SET_KEY(tsigkey, SHA1);
+#endif
+#ifdef ISC_SHA224_DIGESTLENGTH
     } else if (strncasecmp(alg, "hmac-sha224:", 12) == 0) {
         SET_KEY(tsigkey, SHA224);
+#endif
+#ifdef ISC_SHA256_DIGESTLENGTH
     } else if (strncasecmp(alg, "hmac-sha256:", 12) == 0) {
         SET_KEY(tsigkey, SHA256);
+#endif
+#ifdef ISC_SHA384_DIGESTLENGTH
     } else if (strncasecmp(alg, "hmac-sha384:", 12) == 0) {
         SET_KEY(tsigkey, SHA384);
+#endif
+#ifdef ISC_SHA512_DIGESTLENGTH
     } else if (strncasecmp(alg, "hmac-sha512:", 12) == 0) {
         SET_KEY(tsigkey, SHA512);
+#endif
     } else {
         perf_log_warning("invalid TSIG algorithm %.*s", alglen, alg);
         perf_opt_usage();
@@ -411,21 +433,31 @@ hmac_init(perf_dnstsigkey_t *tsigkey, hmac_ctx_t *ctx)
     case TSIG_HMACMD5:
         isc_hmacmd5_init(&ctx->hmacmd5, secret, length);
         break;
+#ifdef ISC_SHA1_DIGESTLENGTH
     case TSIG_HMACSHA1:
         isc_hmacsha1_init(&ctx->hmacsha1, secret, length);
         break;
+#endif
+#ifdef ISC_SHA224_DIGESTLENGTH
     case TSIG_HMACSHA224:
         isc_hmacsha224_init(&ctx->hmacsha224, secret, length);
         break;
+#endif
+#ifdef ISC_SHA256_DIGESTLENGTH
     case TSIG_HMACSHA256:
         isc_hmacsha256_init(&ctx->hmacsha256, secret, length);
         break;
+#endif
+#ifdef ISC_SHA384_DIGESTLENGTH
     case TSIG_HMACSHA384:
         isc_hmacsha384_init(&ctx->hmacsha384, secret, length);
         break;
+#endif
+#ifdef ISC_SHA512_DIGESTLENGTH
     case TSIG_HMACSHA512:
         isc_hmacsha512_init(&ctx->hmacsha512, secret, length);
         break;
+#endif
     }
 }
 
@@ -437,21 +469,31 @@ hmac_update(perf_dnstsigkey_t *tsigkey, hmac_ctx_t *ctx,
     case TSIG_HMACMD5:
         isc_hmacmd5_update(&ctx->hmacmd5, data, length);
         break;
+#ifdef ISC_SHA1_DIGESTLENGTH
     case TSIG_HMACSHA1:
         isc_hmacsha1_update(&ctx->hmacsha1, data, length);
         break;
+#endif
+#ifdef ISC_SHA224_DIGESTLENGTH
     case TSIG_HMACSHA224:
         isc_hmacsha224_update(&ctx->hmacsha224, data, length);
         break;
+#endif
+#ifdef ISC_SHA256_DIGESTLENGTH
     case TSIG_HMACSHA256:
         isc_hmacsha256_update(&ctx->hmacsha256, data, length);
         break;
+#endif
+#ifdef ISC_SHA384_DIGESTLENGTH
     case TSIG_HMACSHA384:
         isc_hmacsha384_update(&ctx->hmacsha384, data, length);
         break;
+#endif
+#ifdef ISC_SHA512_DIGESTLENGTH
     case TSIG_HMACSHA512:
         isc_hmacsha512_update(&ctx->hmacsha512, data, length);
         break;
+#endif
     }
 }
 
@@ -463,21 +505,31 @@ hmac_sign(perf_dnstsigkey_t *tsigkey, hmac_ctx_t *ctx, unsigned char *digest,
     case TSIG_HMACMD5:
         isc_hmacmd5_sign(&ctx->hmacmd5, digest);
         break;
+#ifdef ISC_SHA1_DIGESTLENGTH
     case TSIG_HMACSHA1:
         isc_hmacsha1_sign(&ctx->hmacsha1, digest, digestlen);
         break;
+#endif
+#ifdef ISC_SHA224_DIGESTLENGTH
     case TSIG_HMACSHA224:
         isc_hmacsha224_sign(&ctx->hmacsha224, digest, digestlen);
         break;
+#endif
+#ifdef ISC_SHA256_DIGESTLENGTH
     case TSIG_HMACSHA256:
         isc_hmacsha256_sign(&ctx->hmacsha256, digest, digestlen);
         break;
+#endif
+#ifdef ISC_SHA384_DIGESTLENGTH
     case TSIG_HMACSHA384:
         isc_hmacsha384_sign(&ctx->hmacsha384, digest, digestlen);
         break;
+#endif
+#ifdef ISC_SHA512_DIGESTLENGTH
     case TSIG_HMACSHA512:
         isc_hmacsha512_sign(&ctx->hmacsha512, digest, digestlen);
         break;
+#endif
     }
 }
 
@@ -495,6 +547,9 @@ add_tsig(isc_buffer_t *packet, perf_dnstsigkey_t *tsigkey)
     unsigned char tmpdata[512];
     isc_buffer_t tmp;
     isc_uint32_t now;
+#ifndef ISC_SHA256_DIGESTLENGTH
+#define ISC_SHA256_DIGESTLENGTH 32
+#endif
     unsigned char digest[ISC_SHA256_DIGESTLENGTH];
 
     hmac_init(tsigkey, &hmac);
